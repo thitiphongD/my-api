@@ -1,13 +1,8 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
-const shortid = require('shortid');
 const mysql = require("mysql2/promise");
 const cors = require('cors');
-const fetch = require('node-fetch');
-const qr = require('qrcode');
-const { createReadStream } = require('fs');
-const { parse } = require('node-html-parser');
 app.use(express.json());
 app.use(cors());
 
