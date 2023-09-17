@@ -368,6 +368,25 @@ app.post('/deleteLink', async (req, res) => {
     }
 });
 
+app.post('/deleteUser', async (req, res) => {
+    const id = req.body.id;
+    try {
+        const connection = await pool.getConnection();
+        await connection.query('DELETE FROM users WHERE id = ?', [id]);
+        connection.release();
+        return res.status(200).json({
+            code: 200,
+            message: 'User deleted successfully',
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal server error',
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
