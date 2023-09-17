@@ -23,13 +23,25 @@ pool.on('error', (err) => {
     console.error('MySQL pool error:', err);
 });
 
-app.get('/users', async (req, res) => {
+app.post('/users', async (req, res) => {
+    const email = req.body.email;
     try {
         const connection = await pool.getConnection();
-        const [rows, fields] = await connection.query('SELECT * FROM users');
+        const [rows] = await connection.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (rows[0].role != 'Admin') {
+            return res.status(400).json({
+                code: 400,
+                message: 'Your not Admin',
+            });
+        }
+        const [result] = await connection.query('SELECT * FROM users');
+
         connection.release();
 
-        return res.status(200).json(rows);
+        return res.status(200).json({
+            code: 200,
+            data: result
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({
@@ -238,6 +250,32 @@ app.post('/redirectOriginal', async (req, res) => {
         connection.release();
     }
 });
+
+app.get('/go/:shortUrl', async (req, res) => {
+    const shortUrl = req.params.shortUrl;
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT original_link FROM link WHERE short_link = ?', [shortUrl]);
+        connection.release();
+
+        if (rows.length > 0) {
+            const originalUrl = rows[0].original_link;
+            return res.redirect(301, originalUrl);
+        } else {
+            return res.status(404).json({
+                code: 404,
+                message: 'Original URL not found.',
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal server error',
+        });
+    }
+});
+
 
 app.post('/getLink', async (req, res) => {
     const email = req.body.email;
