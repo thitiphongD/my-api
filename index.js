@@ -207,6 +207,22 @@ app.post('/shortLink', async (req, res) => {
     }
 });
 
+app.post('/redirectOriginal', async (req, res) => {
+    const shortLink = req.body.shortLink;
+    console.log(shortLink);
+    try {
+        return res.status(200).json({
+            data: shortLink
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal server error',
+        });
+    }
+});
+
 app.post('/getLink', async (req, res) => {
     const email = req.body.email;
 
