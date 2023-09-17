@@ -251,7 +251,7 @@ app.post('/redirectOriginal', async (req, res) => {
     }
 });
 
-app.get('/go/:shortUrl', async (req, res) => {
+app.get('/:shortUrl', async (req, res) => {
     const shortUrl = req.params.shortUrl;
     try {
         const connection = await pool.getConnection();
