@@ -119,7 +119,7 @@ app.post('/register', async (req, res) => {
             connection.release();
             return res.status(400).json({
                 code: 400,
-                message: 'Email already exists. Please choose a different one.',
+                message: 'Email already exists. Please choose a different Email.',
             });
         }
 
