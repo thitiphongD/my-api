@@ -98,12 +98,14 @@ app.post('/register', async (req, res) => {
 
     if (!email || !password || !confirmPassword) {
         return res.status(400).json({
+            code: 400,
             message: 'Please provide email, password, and confirmPassword.',
         });
     }
 
     if (password !== confirmPassword) {
         return res.status(400).json({
+            code: 400,
             message: 'Password and confirmPassword do not match.',
         });
     }
@@ -116,6 +118,7 @@ app.post('/register', async (req, res) => {
         if (existingUsers.length > 0) {
             connection.release();
             return res.status(400).json({
+                code: 400,
                 message: 'Email already exists. Please choose a different one.',
             });
         }
