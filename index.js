@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const PORT = 8088;
 const mysql = require("mysql2/promise");
 const cors = require('cors');
 const shortid = require('shortid');
@@ -207,21 +207,65 @@ app.post('/shortLink', async (req, res) => {
     }
 });
 
+// app.post('/redirectOriginal', async (req, res) => {
+//     const shortLink = req.body.shortLink;
+
+//     const cleanedLink = shortLink.replace("https://trien-bit/", "");
+
+//     const connection = await pool.getConnection();
+//     const [link] =  await connection.query(`SELECT original_link FROM link WHERE short_link = ?`, [cleanedLink])
+//     connection.release();
+
+//     const redirectLink = link[0].original_link
+
+//     try {
+//         return res.status(200).json({
+//             data: redirectLink
+//         })
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({
+//             code: 500,
+//             message: 'Internal server error',
+//         });
+//     }
+// });
+
 app.post('/redirectOriginal', async (req, res) => {
     const shortLink = req.body.shortLink;
-    console.log(shortLink);
+
+    const cleanedLink = shortLink.replace("https://trien-bit/", "");
+
+    const connection = await pool.getConnection();
     try {
-        return res.status(200).json({
-            data: shortLink
-        })
+        const [link] = await connection.query(
+            'SELECT original_link FROM link WHERE short_link = ?',
+            [cleanedLink]
+        );
+
+        if (link && link.length > 0) {
+            const redirectLink = link[0].original_link;
+
+            // Redirect to the original URL
+            res.redirect(redirectLink);
+        } else {
+            // Handle the case where the short link is not found
+            res.status(404).json({
+                code: 404,
+                message: 'Short link not found',
+            });
+        }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({
+        res.status(500).json({
             code: 500,
             message: 'Internal server error',
         });
+    } finally {
+        connection.release();
     }
 });
+
 
 app.post('/getLink', async (req, res) => {
     const email = req.body.email;
