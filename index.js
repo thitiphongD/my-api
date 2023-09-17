@@ -154,7 +154,7 @@ app.post('/shortLink', async (req, res) => {
         const queryBackHalf = newBackHalf || shortLinkId;
         const shortLinkUrl = queryBackHalf;
 
-        const domain = 'http://localhost:4000/';
+        const domain = 'https://trien-bit/';
 
         const connection = await pool.getConnection();
         const [rows] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE email = ?', [email]);
