@@ -166,7 +166,7 @@ app.post('/shortLink', async (req, res) => {
         const queryBackHalf = newBackHalf || shortLinkId;
         const shortLinkUrl = queryBackHalf;
 
-        const domain = 'https://trien-bit/';
+        const domain = 'https://thity-api.cleverapps.io/';
 
         const connection = await pool.getConnection();
         const [rows] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE email = ?', [email]);
@@ -198,7 +198,7 @@ app.post('/shortLink', async (req, res) => {
 
         await connection.query(`
             INSERT INTO link (email, original_link, domain, short_link, title, icon, timestamp) 
-            VALUES (?, ?, ?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '+00:00'))`, [email, longUrl, domain, shortLinkUrl, queryTitle, icon]
+            VALUES (?, ?, ?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '+07:00'))`, [email, longUrl, domain, shortLinkUrl, queryTitle, icon]
         );
 
         return res.status(200).json({
