@@ -18,11 +18,31 @@ const pool = mysql.createPool({
     database: 'buuuikfhqw5l0acqlcy2',
     waitForConnections: true
 });
+
 console.log('Connected to MySQL database');
 
 pool.on('error', (err) => {
     console.error('MySQL pool error:', err);
 });
+
+function checkURL(url) {
+    return /^https?:\/\//i.test(url);
+}
+
+function generateQRCodeData(link) {
+    return new Promise((resolve, reject) => {
+        QRCode.toDataURL(link, {
+            errorCorrectionLevel: 'H',
+        }, (err, url) => {
+            if (err) {
+                reject(err);
+            } else {
+                const dataImage = `data:image/png;base64,${url.split(',')[1]}`;
+                resolve(dataImage);
+            }
+        });
+    });
+}
 
 app.post('/users', async (req, res) => {
     const email = req.body.email;
@@ -58,7 +78,6 @@ app.get('/hello', (req, res) => {
     })
 });
 
-
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -67,7 +86,6 @@ app.post('/login', async (req, res) => {
             message: 'Please provide both email and password.',
         });
     }
-
     try {
         const connection = await pool.getConnection();
         const [rows] = await connection.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
@@ -93,7 +111,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-
 app.post('/register', async (req, res) => {
     const { email, password, confirmPassword } = req.body;
 
@@ -113,7 +130,6 @@ app.post('/register', async (req, res) => {
 
     try {
         const connection = await pool.getConnection();
-
         const [existingUsers] = await connection.query('SELECT * FROM users WHERE email = ?', [email]);
 
         if (existingUsers.length > 0) {
@@ -141,29 +157,8 @@ app.post('/register', async (req, res) => {
     }
 });
 
-function checkURL(url) {
-    return /^https?:\/\//i.test(url);
-}
-
-function generateQRCodeData(link) {
-    return new Promise((resolve, reject) => {
-        QRCode.toDataURL(link, {
-            errorCorrectionLevel: 'H',
-        }, (err, url) => {
-            if (err) {
-                reject(err);
-            } else {
-                const dataImage = `data:image/png;base64,${url.split(',')[1]}`;
-                resolve(dataImage);
-            }
-        });
-    });
-}
-
 app.post('/generateQR', async (req, res) => {
-
     const { longUrl, email, newTitle, newBackHalf } = req.body;
-
     checkURL(longUrl);
 
     if (!checkURL(longUrl)) {
@@ -240,7 +235,6 @@ app.post('/generateQR', async (req, res) => {
         });
     }
 });
-
 
 app.post('/shortLink', async (req, res) => {
     const { longUrl, email, newTitle, newBackHalf } = req.body;
@@ -373,7 +367,6 @@ app.get('/:shortUrl', async (req, res) => {
         });
     }
 });
-
 
 app.post('/getLink', async (req, res) => {
     const email = req.body.email;
