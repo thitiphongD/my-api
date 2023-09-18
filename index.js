@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const PORT = 8088;
 const mysql = require("mysql2/promise");
 const cors = require('cors');
 const shortid = require('shortid');
@@ -8,7 +8,8 @@ const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
 app.use(express.json());
 app.use(cors());
-
+const QRCode = require('qrcode');
+const fs = require('fs');
 
 const pool = mysql.createPool({
     host: 'buuuikfhqw5l0acqlcy2-mysql.services.clever-cloud.com',
@@ -143,6 +144,103 @@ app.post('/register', async (req, res) => {
 function checkURL(url) {
     return /^https?:\/\//i.test(url);
 }
+
+function generateQRCodeData(link) {
+    return new Promise((resolve, reject) => {
+        QRCode.toDataURL(link, {
+            errorCorrectionLevel: 'H',
+        }, (err, url) => {
+            if (err) {
+                reject(err);
+            } else {
+                const dataImage = `data:image/png;base64,${url.split(',')[1]}`;
+                resolve(dataImage);
+            }
+        });
+    });
+}
+
+app.post('/generateQR', async (req, res) => {
+
+    const { longUrl, email, newTitle, newBackHalf } = req.body;
+
+    checkURL(longUrl);
+
+    if (!checkURL(longUrl)) {
+        return res.status(400).json({
+            code: 400,
+            message: 'URL is not in the correct pattern',
+        });
+    }
+
+    if (!longUrl || !email) {
+        return res.status(400).json({
+            code: 400,
+            message: 'Please provide a valid "link" or "email" property in the request body.',
+        });
+    }
+    try {
+
+        const shortLinkId = shortid.generate();
+        const queryBackHalf = newBackHalf || shortLinkId;
+        const shortLinkUrl = queryBackHalf;
+
+        const domain = 'https://thity-api.cleverapps.io/';
+
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE email = ?', [email]);
+        connection.release();
+
+        if (rows[0].count === 0) {
+            return res.status(400).json({
+                code: 400,
+                message: 'Email address does not exist in the database.',
+            });
+        }
+
+        const response = await fetch(longUrl);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch the web page');
+        }
+
+        const htmlContent = await response.text();
+        const root = parse(htmlContent);
+        const titleElement = root.querySelector('title');
+        const title = titleElement ? titleElement.text : 'No Title Found';
+
+        const faviconLink = root.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
+        const faviconHref = faviconLink ? faviconLink.getAttribute('href') : null;
+        const icon = faviconHref ? new URL(faviconHref, longUrl).toString() : null;
+
+        const queryTitle = newTitle || title;
+        const link = `${domain}${shortLinkUrl}`;
+
+        let newQR = await generateQRCodeData(link);
+
+        await connection.query(`
+            INSERT INTO link (email, original_link, domain, short_link, qr_code, title, icon, timestamp) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '+07:00'))`, [email, longUrl, domain, shortLinkUrl, newQR, queryTitle, icon]
+        );
+
+        return res.status(200).json({
+            code: 200,
+            email: email,
+            domain: domain,
+            shortLink: shortLinkUrl,
+            longLink: longUrl,
+            title: queryTitle,
+            icon: icon
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal server error',
+        });
+    }
+});
+
 
 app.post('/shortLink', async (req, res) => {
 
