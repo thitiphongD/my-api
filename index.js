@@ -243,9 +243,7 @@ app.post('/generateQR', async (req, res) => {
 
 
 app.post('/shortLink', async (req, res) => {
-
     const { longUrl, email, newTitle, newBackHalf } = req.body;
-
     checkURL(longUrl);
 
     if (!checkURL(longUrl)) {
@@ -322,7 +320,6 @@ app.post('/shortLink', async (req, res) => {
 
 app.post('/redirectOriginal', async (req, res) => {
     const shortLink = req.body.shortLink;
-
     const connection = await pool.getConnection();
     try {
         const [link] = await connection.query(
