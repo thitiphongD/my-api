@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8088;
+const PORT = 8080;
 const mysql = require("mysql2/promise");
 const cors = require('cors');
 const shortid = require('shortid');
