@@ -10,6 +10,8 @@ app.use(express.json());
 app.use(cors());
 const QRCode = require('qrcode');
 const fs = require('fs');
+const router = express.Router();
+const cryptoRouter = require('./crypto');
 
 const pool = mysql.createPool({
     host: 'buuuikfhqw5l0acqlcy2-mysql.services.clever-cloud.com',
@@ -477,6 +479,8 @@ app.post('/deleteUser', async (req, res) => {
         });
     }
 });
+
+app.use('/api', cryptoRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
