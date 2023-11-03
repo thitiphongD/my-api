@@ -5,12 +5,8 @@ const PORT = 8080;
 const cors = require('cors');
 app.use(express.json());
 app.use(cors());
-
-// const db = require('./db'); // Import the database connection
-const routes = require('./routes'); // Import the router
-
+const mainRoutes = require('./routes/mainRoutes')
 const sequelize = require('./sequelize-config');
-const User = require('./models/User');
 
 async function initialize() {
     try {
@@ -28,8 +24,7 @@ async function initialize() {
 
 initialize();
 
-// Use the router for specific routes
-app.use('/', routes);
+app.use('/', mainRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

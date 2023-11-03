@@ -2,21 +2,21 @@ const { DataTypes } = require('sequelize');
 const { UUID, UUIDV4, STRING } = DataTypes;
 const sequelize = require('../sequelize-config');
 
-const Balance = sequelize.define('Balance', {
-    balance_id: {
+const Currency = sequelize.define('currency', {
+    id: {
         type: UUID,
         defaultValue: UUIDV4,
         primaryKey: true,
         allowNull: false,
     },
-    user_id: {
-        type: DataTypes.UUID,
+    name: {
+        type: DataTypes.STRING,
         allowNull: false,
     },
-    crypto_balance: {
-        type: DataTypes.DOUBLE,
+    symbol: {
+        type: DataTypes.STRING,
         allowNull: false,
     }
 });
 
-module.exports = Balance;
+module.exports = Currency;

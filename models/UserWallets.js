@@ -1,31 +1,32 @@
 const { DataTypes } = require('sequelize');
 const { UUID, UUIDV4 } = DataTypes;
 const sequelize = require('../sequelize-config');
-const UserWallets = require('./UserWallets');
+const Currency = require('./Currency');
 
-const User = sequelize.define('users', {
+const UserWallets = sequelize.define('userWallets', {
     id: {
         type: UUID,
         defaultValue: UUIDV4,
         primaryKey: true,
         allowNull: false,
     },
-    username: {
-        type: DataTypes.STRING,
+    user_id: {
+        type: DataTypes.UUID,
         allowNull: false,
     },
-    email: {
-        type: DataTypes.STRING,
+    currency_id: {
+        type: DataTypes.UUID,
         allowNull: false,
     },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    role: {
+    balance: {
         type: DataTypes.STRING,
         allowNull: false,
     }
 });
 
-module.exports = User;
+UserWallets.belongsTo(Currency, {
+    foreignKey: 'currency_id',
+    as: 'currency',
+});
+
+module.exports = UserWallets;
